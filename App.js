@@ -1,43 +1,88 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
+import React, {useState} from 'react';
+import {
+  Button,
+  SafeAreaView,
+  StyleSheet,
+  ScrollView,
+  View,
+  Text,
+  StatusBar,
+  Dimensions,
+} from 'react-native';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
+import {mediaDevices, RTCView} from 'react-native-webrtc';
+import {useRef, useEffect} from 'react';
+import Canvas from 'react-native-canvas';
 
-import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-import {useState, useEffect} from 'react';
-import * as tf from '@tensorflow/tfjs';
-import '@tensorflow/tfjs-react-native';
+const {width, height} = Dimensions.get('screen');
 const App = () => {
-  const [tfReady, setTFReady] = useState(false);
-  useEffect(() => {
-    const load = async () => {
+  const canvas = useRef(null);
+  const [stream, setStream] = useState(null);
+  const start = async () => {
+    console.log('start');
+    if (!stream) {
+      let s;
       try {
-        await tf.ready();
-        setTFReady(true);
-      } catch (error) {
-        console.log(error);
+        s = await mediaDevices.getUserMedia({video: true});
+        setStream(s);
+      } catch (e) {
+        console.error(e);
       }
-    };
-    load();
-  });
+    }
+  };
+  const stop = () => {
+    console.log('stop');
+    if (stream) {
+      stream.release();
+      setStream(null);
+    }
+  };
+  useEffect(() => {
+    // console.log('Hello');
+    const ctx = canvas.current.getContext('2d');
+    ctx.fillRect(0, 0, canvas.current.width, canvas.current.height);
+    ctx.fillStyle = 'blue';
+    // ctx.fillRect(0, 0, 100, 100);
+  }, []);
   return (
-    <View style={styles.container}>
-      <Text>Open up!</Text>
-      {tfReady && <Text>Vivek</Text>}
-    </View>
+    <>
+      <StatusBar barStyle="dark-content" />
+      <SafeAreaView style={styles.body}>
+        <Canvas ref={canvas} style={styles.can}/>
+        {stream && <RTCView streamURL={stream.toURL()} style={styles.stream} />}
+        <View style={styles.footer}>
+          <Button title="Start" onPress={start} />
+          <Button title="Stop" onPress={stop} />
+        </View>
+      </SafeAreaView>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  body: {
+    backgroundColor: Colors.white,
+    ...StyleSheet.absoluteFill,
+  },
+  stream: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: -180,
+    zIndex: 1,
+    // position:'absolute',
+    // top:0,
+    // left:0,
+    // right:0
+  },
+  footer: {
+    // backgroundColor: Colors.lighter,
+    // position: 'absolute',
+    // bottom: 0,
+    // left: 0,
+    // right: 0,
+  },
+  can: {
+    zIndex: 2,
+    //   zIndex: 2,
   },
 });
 
