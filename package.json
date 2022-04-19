@@ -25,7 +25,6 @@
     "react-native": "0.64.3",
     "react-native-fs": "^2.19.0",
     "react-native-svg": "^12.3.0",
-    "react-native-webrtc": "^1.100.0",
     "react-native-webview": "^11.18.1"
   },
   "devDependencies": {
